@@ -41,15 +41,15 @@ const router = createRouter({
   ],
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to) => {
   const auth = useAuthStore();
   
   if (to.meta.auth && !auth.isAuthenticated) {
-    next('/login');
-  } else if (to.meta.guest && auth.isAuthenticated) {
-    next('/projects');
-  } else {
-    next();
+    return '/login';
+  }
+  
+  if (to.meta.guest && auth.isAuthenticated) {
+    return '/projects';
   }
 });
 

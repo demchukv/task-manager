@@ -1,38 +1,49 @@
 <script setup lang="ts">
 import { RouterLink, RouterView, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { Button } from '@/components/ui/button'
 
 const auth = useAuthStore()
 const router = useRouter()
 
+if (auth.isAuthenticated) {
+  auth.startSessionWatcher()
+}
+
 const logout = async () => {
+  auth.stopSessionWatcher()
   await auth.logout()
   router.push('/login')
 }
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <nav v-if="auth.isAuthenticated" class="bg-white shadow">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-          <div class="flex">
-            <div class="flex-shrink-0 flex items-center">
-              <RouterLink to="/projects" class="text-xl font-bold text-indigo-600">ProjectTask</RouterLink>
-            </div>
-            <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <RouterLink to="/projects" class="inline-flex items-center px-1 pt-1 border-b-2 border-indigo-500 text-sm font-medium text-gray-900">Projects</RouterLink>
-            </div>
+  <div class="min-h-screen bg-background px-2 md:px-6 lg:px-10 xl:px-16 mx-auto">
+    <header v-if="auth.isAuthenticated"
+      class="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div class="container flex h-14 items-center justify-between">
+        <div class="flex items-center gap-4 md:gap-6">
+          <RouterLink to="/projects" class="flex items-center space-x-2">
+            <span class="inline-block font-bold text-primary text-xl">ProjectTask</span>
+          </RouterLink>
+          <nav class="flex items-center space-x-6 text-sm font-medium">
+            <RouterLink to="/projects" class="transition-colors hover:text-foreground/80 text-foreground">Projects
+            </RouterLink>
+          </nav>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="hidden md:flex flex-col items-end">
+            <span class="text-xs font-medium">{{ auth.user?.name }}</span>
+            <span class="text-[10px] text-muted-foreground uppercase tracking-wider">{{ auth.user?.role }}</span>
           </div>
-          <div class="flex items-center">
-            <span class="mr-4 text-sm text-gray-700">{{ auth.user?.name }} ({{ auth.user?.role }})</span>
-            <button @click="logout" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700">Logout</button>
-          </div>
+          <Button variant="outline" size="sm" @click="logout" class="h-8">
+            Logout
+          </Button>
         </div>
       </div>
-    </nav>
+    </header>
 
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <main class="container">
       <RouterView />
     </main>
   </div>

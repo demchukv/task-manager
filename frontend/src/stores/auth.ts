@@ -5,6 +5,7 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: JSON.parse(localStorage.getItem('user') || 'null'),
     token: localStorage.getItem('token') || null,
+    sessionInterval: null as number | null,
   }),
   getters: {
     isAuthenticated: (state) => !!state.token,
@@ -41,7 +42,27 @@ export const useAuthStore = defineStore('auth', {
         this.user = response.data;
         localStorage.setItem('user', JSON.stringify(this.user));
       } catch (error) {
+        this.stopSessionWatcher();
         this.logout();
+      }
+    },
+    startSessionWatcher() {
+      if (this.sessionInterval) return;
+      
+      // Check immediately, then every 60 seconds
+      this.fetchUser();
+      this.sessionInterval = window.setInterval(() => {
+        if (this.token) {
+          this.fetchUser();
+        } else {
+          this.stopSessionWatcher();
+        }
+      }, 60000);
+    },
+    stopSessionWatcher() {
+      if (this.sessionInterval) {
+        clearInterval(this.sessionInterval);
+        this.sessionInterval = null;
       }
     },
   },

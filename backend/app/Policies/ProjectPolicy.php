@@ -32,7 +32,9 @@ class ProjectPolicy
      */
     public function view(User $user, Project $project): bool
     {
-        return $user->id === $project->owner_id || $project->members->contains($user);
+        return $user->id === $project->owner_id
+            || $project->members->contains('id', $user->id)
+            || $project->tasks()->where('assignee_id', $user->id)->exists();
     }
 
     /**

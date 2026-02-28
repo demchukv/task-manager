@@ -24,12 +24,15 @@ class ProjectController extends Controller
                 $q->where('owner_id', $request->user()->id)
                     ->orWhereHas('members', function ($q) use ($request) {
                         $q->where('users.id', $request->user()->id);
+                    })
+                    ->orWhereHas('tasks', function ($q) use ($request) {
+                        $q->where('assignee_id', $request->user()->id);
                     });
             });
         }
 
         // Search
-        if ($request->has('q')) {
+        if ($request->filled('q')) {
             $query->where('name', 'like', '%' . $request->q . '%');
         }
 
@@ -43,7 +46,7 @@ class ProjectController extends Controller
             $query->orderBy($column, $direction);
         }
 
-        return $this->successResponse(ProjectResource::collection($query->paginate(10))->response()->getData(true));
+        return $this->successResponse(ProjectResource::collection($query->with('owner')->withCount('tasks')->paginate(10))->response()->getData(true));
     }
 
     /**

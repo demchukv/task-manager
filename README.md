@@ -1,3 +1,26 @@
+## Початок роботи з додатком
+
+1. **Управління ролями**: Використано просто поле `role` (admin/member) в таблиці користувачів. Для продакшену краще було б використати пакет `spatie/laravel-permission` для управління ролями і правами доступу.
+2. **Real-time**: Comments and task updates are not real-time. Integrating WebSockets (Laravel Echo/Reverb) would enhance the UX.
+3. **Завантаження файлів**: Не реалізовано.
+
+## Запуск
+
+### Backend
+1. `cd backend`
+2. `php artisan migrate:fresh --seed` (Використав SQLite по замовчуванню)
+3. `php artisan serve`
+
+### Frontend
+1. `cd frontend`
+2. `npm install`
+3. `npm run dev`
+
+### Tests
+1. `cd backend`
+2. `php artisan test`
+
+
 ## Опис продукту: "Projects & Tasks"
 
 Потрібно реалізувати спрощений менеджер проєктів і задач:
@@ -55,27 +78,3 @@
 * Форми створення/редагування проєктів і задач у модалках або окремих сторінках.  
 * UI — простий, але акуратний (Tailwind або простий CSS). (може бути вбудований в стартеркіт(https://www.shadcn-vue.com/)  
 * Дружній UX: показ спінерів, повідомлення про помилки валідації, порожні стани.
-
-
-## Trade-offs & Future Improvements
-
-1. **Role Management**: Simplified RBAC with `role` column (admin/member). For a production system, a package like `spatie/laravel-permission` would be preferred.
-2. **Real-time Updates**: Comments and task updates are not real-time. Integrating WebSockets (Laravel Echo/Reverb) would enhance the UX.
-3. **File Attachments**: Not implemented to keep within the 6-8 hour budget.
-4. **Comprehensive Filtering**: Basic filtering by status and priority is implemented. Range-based filtering for `due_date` could be added.
-
-## How to Run
-
-### Backend
-1. `cd backend`
-2. `php artisan migrate:fresh --seed` (Uses SQLite by default)
-3. `php artisan serve`
-
-### Frontend
-1. `cd frontend`
-2. `npm install`
-3. `npm run dev`
-
-### Tests
-1. `cd backend`
-2. `php artisan test`

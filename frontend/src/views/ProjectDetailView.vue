@@ -1,31 +1,48 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
-import api from '@/api';
+import { ref, onMounted, watch } from 'vue'
+import { useRoute, RouterLink } from 'vue-router'
+import api from '@/api'
+import { useAuthStore } from '@/stores/auth'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import TaskCard from '@/components/tasks/TaskCard.vue'
+import {
+    PlusIcon,
+    SearchIcon,
+    Loader2Icon,
+    ChevronLeftIcon
+} from 'lucide-vue-next'
 
-const route = useRoute();
-const project = ref<any>(null);
+const route = useRoute()
+const auth = useAuthStore()
+const project = ref<any>(null)
 const tasks = ref<any[]>([]);
-const loading = ref(true);
-const tasksLoading = ref(false);
+const users = ref<any[]>([])
+const loading = ref(true)
+const tasksLoading = ref(false)
 
-const filterStatus = ref('');
-const filterPriority = ref('');
-const taskSearch = ref('');
+const filterStatus = ref('')
+const filterPriority = ref('')
+const taskSearch = ref('')
 
 const fetchProject = async () => {
     try {
-        const response = await api.get(`/projects/${route.params.id}`);
-        project.value = response.data.data;
+        const response = await api.get(`/projects/${route.params.id}`)
+        project.value = response.data
     } catch (err) {
-        console.error('Failed to fetch project', err);
+        console.error('Failed to fetch project', err)
     } finally {
-        loading.value = false;
+        loading.value = false
     }
-};
+}
 
 const fetchTasks = async () => {
-    tasksLoading.value = true;
+    tasksLoading.value = true
     try {
         const response = await api.get(`/projects/${route.params.id}/tasks`, {
             params: {
@@ -33,230 +50,209 @@ const fetchTasks = async () => {
                 priority: filterPriority.value,
                 q: taskSearch.value,
             },
-        });
-        tasks.value = response.data.data;
+        })
+        tasks.value = response.data.data
     } catch (err) {
-        console.error('Failed to fetch tasks', err);
+        console.error('Failed to fetch tasks', err)
     } finally {
-        tasksLoading.value = false;
+        tasksLoading.value = false
     }
-};
+}
+
+const fetchUsers = async () => {
+    if (!auth.isAdmin) return
+    try {
+        const response = await api.get('/users')
+        users.value = response.data
+    } catch (err) {
+        console.error('Failed to fetch users', err)
+    }
+}
 
 onMounted(() => {
-    fetchProject();
-    fetchTasks();
-});
+    fetchProject()
+    fetchTasks()
+    fetchUsers()
+})
 
-watch([filterStatus, filterPriority, taskSearch], fetchTasks);
+watch([filterStatus, filterPriority, taskSearch], fetchTasks)
 
-const showTaskModal = ref(false);
+const showTaskModal = ref(false)
 const newTask = ref({
     title: '',
     description: '',
     status: 'todo',
     priority: 'medium',
     due_date: '',
-});
+    assignee_id: '',
+})
 
 const createTask = async () => {
     try {
-        await api.post(`/projects/${route.params.id}/tasks`, newTask.value);
-        showTaskModal.value = false;
-        newTask.value = { title: '', description: '', status: 'todo', priority: 'medium', due_date: '' };
-        fetchTasks();
+        await api.post(`/projects/${route.params.id}/tasks`, newTask.value)
+        showTaskModal.value = false
+        newTask.value = { title: '', description: '', status: 'todo', priority: 'medium', due_date: '', assignee_id: '' }
+        fetchTasks()
     } catch (err) {
-        console.error('Failed to create task', err);
+        console.error('Failed to create task', err)
     }
-};
-
-const getStatusColor = (status: string) => {
-    switch (status) {
-        case 'todo': return 'bg-gray-100 text-gray-800';
-        case 'in_progress': return 'bg-blue-100 text-blue-800';
-        case 'done': return 'bg-green-100 text-green-800';
-        default: return 'bg-gray-100 text-gray-800';
-    }
-};
-
-const getPriorityColor = (priority: string) => {
-    switch (priority) {
-        case 'high': return 'text-red-600';
-        case 'medium': return 'text-yellow-600';
-        case 'low': return 'text-green-600';
-        default: return 'text-gray-600';
-    }
-};
+}
 </script>
 
 <template>
-    <div v-if="loading" class="flex justify-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-    </div>
+    <div class="space-y-6">
+        <div v-if="loading" class="flex flex-col items-center justify-center py-24 space-y-4">
+            <Loader2Icon class="h-8 w-8 animate-spin text-primary" />
+            <p class="text-sm text-muted-foreground">Loading project details...</p>
+        </div>
 
-    <div v-else-if="project">
-        <div class="mb-8">
-            <nav class="flex mb-4" aria-label="Breadcrumb">
-                <ol class="flex items-center space-x-2">
-                    <li>
-                        <router-link to="/projects"
-                            class="text-sm font-medium text-gray-500 hover:text-gray-700">Projects</router-link>
-                    </li>
-                    <li>
-                        <div class="flex items-center">
-                            <span class="text-gray-400 mx-2">/</span>
-                            <span class="text-sm font-medium text-gray-900">{{ project.name }}</span>
-                        </div>
-                    </li>
-                </ol>
-            </nav>
+        <div v-else-if="project" class="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <!-- Breadcrumbs & Header -->
+            <div class="flex flex-col gap-4">
+                <nav class="flex items-center text-xs text-muted-foreground">
+                    <RouterLink to="/projects" class="hover:text-primary flex items-center gap-1 transition-colors">
+                        <ChevronLeftIcon class="h-3 w-3" />
+                        Back to Projects
+                    </RouterLink>
+                    <Separator orientation="vertical" class="mx-2 h-3" />
+                    <span class="font-medium text-foreground truncate max-w-[200px]">{{ project.name }}</span>
+                </nav>
 
-            <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-                <div class="px-4 py-5 sm:px-6 flex justify-between items-start">
-                    <div>
-                        <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-                            {{ project.name }}
-                        </h2>
-                        <p class="mt-1 max-w-2xl text-sm text-gray-500">
-                            {{ project.description || 'No description provided.' }}
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                    <div class="space-y-1">
+                        <h1 class="text-3xl font-bold tracking-tight">{{ project.name }}</h1>
+                        <p class="text-muted-foreground text-sm max-w-2xl">
+                            {{ project.description || 'No description provided for this project.' }}
                         </p>
                     </div>
-                    <button @click="showTaskModal = true"
-                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
+                    <Button @click="showTaskModal = true" class="shrink-0">
+                        <PlusIcon class="mr-2 h-4 w-4" />
                         Add Task
-                    </button>
+                    </Button>
+                </div>
+            </div>
+
+            <Separator />
+
+            <!-- Tasks Section -->
+            <div class="space-y-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <h2 class="text-xl font-semibold flex items-center gap-2">
+                        Tasks
+                        <Badge variant="secondary" class="rounded-full px-2" v-if="tasks.length">{{ tasks.length }}
+                        </Badge>
+                    </h2>
+
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+                        <div class="relative w-full sm:w-64">
+                            <SearchIcon class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input v-model="taskSearch" type="search" placeholder="Search tasks..." class="pl-8 h-9" />
+                        </div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <select v-model="filterStatus"
+                                class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
+                                <option value="">All Statuses</option>
+                                <option value="todo">Todo</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="done">Done</option>
+                            </select>
+                            <select v-model="filterPriority"
+                                class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
+                                <option value="">All Priorities</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="tasksLoading" class="flex flex-col items-center justify-center py-12 space-y-2">
+                    <Loader2Icon class="h-6 w-6 animate-spin text-primary" />
+                    <p class="text-xs text-muted-foreground">Updating tasks...</p>
+                </div>
+
+                <div v-else-if="tasks.length === 0"
+                    class="flex flex-col items-center justify-center py-24 border rounded-lg border-dashed bg-muted/20">
+                    <p class="text-muted-foreground text-sm text-center">
+                        No tasks found.
+                        <br />
+                        <span v-if="taskSearch || filterStatus || filterPriority">Try adjusting your filters.</span>
+                        <span v-else>Start by adding a new task to this project.</span>
+                    </p>
+                    <Button variant="link" size="sm" @click="taskSearch = ''; filterStatus = ''; filterPriority = ''"
+                        v-if="taskSearch || filterStatus || filterPriority">
+                        Clear all filters
+                    </Button>
+                </div>
+
+                <div v-else class="grid grid-cols-1 gap-4">
+                    <TaskCard v-for="task in tasks" :key="task.id" :task="task" />
                 </div>
             </div>
         </div>
 
-        <!-- Task List -->
-        <div class="mt-8">
-            <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
-                <div class="sm:col-span-2">
-                    <input v-model="taskSearch" type="text" placeholder="Search tasks..."
-                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" />
-                </div>
-                <div>
-                    <select v-model="filterStatus"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 bg-white">
-                        <option value="">All Statuses</option>
-                        <option value="todo">Todo</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="done">Done</option>
-                    </select>
-                </div>
-                <div>
-                    <select v-model="filterPriority"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 bg-white">
-                        <option value="">All Priorities</option>
-                        <option value="high">High</option>
-                        <option value="medium">Medium</option>
-                        <option value="low">Low</option>
-                    </select>
-                </div>
-            </div>
-
-            <div v-if="tasksLoading" class="flex justify-center py-8">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-            </div>
-
-            <div v-else-if="tasks.length === 0" class="text-center py-12 bg-white rounded-lg shadow-sm">
-                <p class="text-gray-500">No tasks found for this project.</p>
-            </div>
-
-            <div v-else class="bg-white shadow overflow-hidden sm:rounded-md">
-                <ul role="list" class="divide-y divide-gray-200">
-                    <li v-for="task in tasks" :key="task.id">
-                        <router-link :to="`/tasks/${task.id}`" class="block hover:bg-gray-50">
-                            <div class="px-4 py-4 sm:px-6">
-                                <div class="flex items-center justify-between">
-                                    <p class="text-sm font-medium text-indigo-600 truncate">{{ task.title }}</p>
-                                    <div class="ml-2 flex-shrink-0 flex">
-                                        <p
-                                            :class="['px-2 inline-flex text-xs leading-5 font-semibold rounded-full', getStatusColor(task.status)]">
-                                            {{ task.status.replace('_', ' ').toUpperCase() }}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="mt-2 sm:flex sm:justify-between">
-                                    <div class="sm:flex">
-                                        <p class="flex items-center text-sm text-gray-500">
-                                            Priority: <span
-                                                :class="['ml-1 font-medium', getPriorityColor(task.priority)]">{{
-                                                task.priority }}</span>
-                                        </p>
-                                        <p v-if="task.assignee"
-                                            class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                                            Assignee: {{ task.assignee.name }}
-                                        </p>
-                                    </div>
-                                    <div v-if="task.due_date"
-                                        class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                                        Due: {{ new Date(task.due_date).toLocaleDateString() }}
-                                    </div>
-                                </div>
+        <!-- Add Task Modal -->
+        <div v-if="showTaskModal"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <Card class="w-full max-w-lg shadow-2xl animate-in fade-in zoom-in duration-200">
+                <CardHeader>
+                    <CardTitle>Add New Task</CardTitle>
+                    <p class="text-sm text-muted-foreground">Define a new task for {{ project?.name }}.</p>
+                </CardHeader>
+                <form @submit.prevent="createTask">
+                    <CardContent class="space-y-4">
+                        <div class="space-y-2">
+                            <Label for="title">Title</Label>
+                            <Input id="title" v-model="newTask.title" placeholder="e.g. Design user interface"
+                                required />
+                        </div>
+                        <div class="space-y-2">
+                            <Label for="description">Description</Label>
+                            <Textarea id="description" v-model="newTask.description"
+                                placeholder="Add more details about this task..." rows="3" />
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <Label for="status">Status</Label>
+                                <select id="status" v-model="newTask.status"
+                                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
+                                    <option value="todo">Todo</option>
+                                    <option value="in_progress">In Progress</option>
+                                    <option value="done">Done</option>
+                                </select>
                             </div>
-                        </router-link>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Create Task Modal -->
-        <div v-if="showTaskModal" class="fixed z-10 inset-0 overflow-y-auto">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 bg-gray-500 bg-opacity-75" @click="showTaskModal = false"></div>
-                <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-                <div
-                    class="inline-block align-middle bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-                    <form @submit.prevent="createTask">
-                        <h3 class="text-lg font-medium text-gray-900 border-b pb-4 mb-4">Add New Task</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Title</label>
-                                <input v-model="newTask.title" type="text" required
-                                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Description</label>
-                                <textarea v-model="newTask.description" rows="3"
-                                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></textarea>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Status</label>
-                                    <select v-model="newTask.status"
-                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white">
-                                        <option value="todo">Todo</option>
-                                        <option value="in_progress">In Progress</option>
-                                        <option value="done">Done</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Priority</label>
-                                    <select v-model="newTask.priority"
-                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white">
-                                        <option value="low">Low</option>
-                                        <option value="medium">Medium</option>
-                                        <option value="high">High</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Due Date</label>
-                                <input v-model="newTask.due_date" type="date"
-                                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+                            <div class="space-y-2">
+                                <Label for="priority">Priority</Label>
+                                <select id="priority" v-model="newTask.priority"
+                                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                </select>
                             </div>
                         </div>
-                        <div class="mt-6 flex space-x-3">
-                            <button type="button" @click="showTaskModal = false"
-                                class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">Cancel</button>
-                            <button type="submit"
-                                class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Create
-                                Task</button>
+                        <div class="space-y-2">
+                            <Label for="due_date">Due Date</Label>
+                            <Input id="due_date" v-model="newTask.due_date" type="date" />
                         </div>
-                    </form>
-                </div>
-            </div>
+                        <div v-if="auth.isAdmin" class="space-y-2">
+                            <Label for="assignee">Assign To</Label>
+                            <select id="assignee" v-model="newTask.assignee_id"
+                                class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
+                                <option value="">Unassigned</option>
+                                <option v-for="user in users" :key="user.id" :value="user.id">
+                                    {{ user.name }} ({{ user.email }})
+                                </option>
+                            </select>
+                        </div>
+                    </CardContent>
+                    <div class="flex items-center justify-end gap-3 p-6 pt-0">
+                        <Button variant="outline" type="button" @click="showTaskModal = false">Cancel</Button>
+                        <Button type="submit">Add Task</Button>
+                    </div>
+                </form>
+            </Card>
         </div>
     </div>
 </template>

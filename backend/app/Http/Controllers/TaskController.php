@@ -21,19 +21,19 @@ class TaskController extends Controller
 
         $query = $project->tasks()->with('assignee');
 
-        if ($request->has('status')) {
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        if ($request->has('priority')) {
+        if ($request->filled('priority')) {
             $query->where('priority', $request->priority);
         }
 
-        if ($request->has('assignee_id')) {
+        if ($request->filled('assignee_id')) {
             $query->where('assignee_id', $request->assignee_id);
         }
 
-        if ($request->has('q')) {
+        if ($request->filled('q')) {
             $query->where('title', 'like', '%' . $request->q . '%');
         }
 
@@ -45,6 +45,10 @@ class TaskController extends Controller
         Gate::authorize('update', $project);
 
         $validated = $request->validated();
+
+        if ($request->user()->role !== 'admin') {
+            $validated['assignee_id'] = $request->user()->id;
+        }
 
         $task = $project->tasks()->create($validated);
 
@@ -62,6 +66,10 @@ class TaskController extends Controller
         Gate::authorize('update', $task);
 
         $validated = $request->validated();
+
+        if ($request->user()->role !== 'admin') {
+            unset($validated['assignee_id']);
+        }
 
         $task->update($validated);
 
