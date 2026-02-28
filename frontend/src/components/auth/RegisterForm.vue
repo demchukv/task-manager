@@ -21,7 +21,7 @@ const loading = ref(false)
 const handleRegister = async () => {
     error.value = ''
     if (password.value !== password_confirmation.value) {
-        error.value = 'Passwords do not match'
+        error.value = 'Паролі не співпадають'
         return
     }
 
@@ -37,9 +37,9 @@ const handleRegister = async () => {
     } catch (err: any) {
         if (err.response?.data?.errors) {
             const firstError = Object.values(err.response.data.errors)[0] as string[]
-            error.value = firstError[0] || 'Validation failed'
+            error.value = firstError[0] || 'Помилка валідації'
         } else {
-            error.value = err.response?.data?.message || 'Failed to register. Please check your information.'
+            error.value = err.response?.data?.message || 'Помилка реєстрації. Перевірте ваші дані.'
         }
     } finally {
         loading.value = false
@@ -50,15 +50,15 @@ const handleRegister = async () => {
 <template>
     <Card class="w-full max-w-md mx-auto">
         <CardHeader>
-            <CardTitle class="text-2xl text-center">Create Account</CardTitle>
+            <CardTitle class="text-2xl text-center">Створити акаунт</CardTitle>
             <CardDescription class="text-center">
-                Enter your details to create a new account
+                Введіть ваші дані для створення нового акаунту
             </CardDescription>
         </CardHeader>
         <form @submit.prevent="handleRegister">
             <CardContent class="space-y-4">
                 <div class="space-y-2">
-                    <Label for="name">Full Name</Label>
+                    <Label for="name">Повне ім'я</Label>
                     <Input id="name" type="text" placeholder="John Doe" required v-model="name" />
                 </div>
                 <div class="space-y-2">
@@ -66,11 +66,11 @@ const handleRegister = async () => {
                     <Input id="email" type="email" placeholder="m@example.com" required v-model="email" />
                 </div>
                 <div class="space-y-2">
-                    <Label for="password">Password</Label>
+                    <Label for="password">Пароль</Label>
                     <Input id="password" type="password" required v-model="password" />
                 </div>
                 <div class="space-y-2">
-                    <Label for="password_confirmation">Confirm Password</Label>
+                    <Label for="password_confirmation">Підтвердіть пароль</Label>
                     <Input id="password_confirmation" type="password" required v-model="password_confirmation" />
                 </div>
                 <div v-if="error" class="text-sm font-medium text-destructive text-center">
@@ -80,14 +80,14 @@ const handleRegister = async () => {
             <CardFooter class="flex flex-col space-y-4">
                 <Button type="submit" class="w-full" :disabled="loading">
                     <span v-if="loading" class="flex items-center gap-2">
-                        <Spinner /> Creating account...
+                        <Spinner /> Створення акаунту...
                     </span>
-                    <span v-else>Register</span>
+                    <span v-else>Зареєструватися</span>
                 </Button>
                 <div class="text-center text-sm text-muted-foreground">
-                    Already have an account?
+                    Вже маєте акаунт?
                     <RouterLink to="/login" class="text-primary hover:underline font-medium">
-                        Sign In
+                        Увійти
                     </RouterLink>
                 </div>
             </CardFooter>

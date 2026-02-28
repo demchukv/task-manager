@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { CalendarIcon, UserIcon, ClockIcon } from 'lucide-vue-next'
+import { UserIcon, ClockIcon } from 'lucide-vue-next'
 
 const props = defineProps<{
     task: {
@@ -56,7 +56,7 @@ const formatStatus = (status: string) => {
                         </div>
                         <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                             <div class="flex items-center gap-1">
-                                <span class="font-medium">Priority:</span>
+                                <span class="font-medium">Пріоритет:</span>
                                 <span :class="['font-bold capitalize', getPriorityColor(task.priority)]">
                                     {{ task.priority }}
                                 </span>
@@ -71,7 +71,7 @@ const formatStatus = (status: string) => {
                     <div v-if="task.due_date"
                         class="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-md shrink-0">
                         <ClockIcon class="h-3.5 w-3.5" />
-                        <span>Due: {{ new Date(task.due_date).toLocaleDateString() }}</span>
+                        <span>Кінцевий термін: {{ new Date(task.due_date).toLocaleDateString() }}</span>
                     </div>
                 </div>
             </CardContent>

@@ -31,7 +31,7 @@ const fetchProjects = async () => {
         projects.value = response.data.data
         pagination.value = response.data.meta
     } catch (err) {
-        console.error('Failed to fetch projects', err)
+        console.error('Не вдалося завантажити проекти', err)
     } finally {
         loading.value = false
     }
@@ -59,9 +59,9 @@ const createProject = async () => {
     } catch (err: any) {
         if (err.response?.data?.errors) {
             const firstError = Object.values(err.response.data.errors)[0] as string[]
-            error.value = firstError[0] || 'Validation failed'
+            error.value = firstError[0] || 'Помилка валідації'
         } else {
-            error.value = err.response?.data?.message || 'Failed to create project'
+            error.value = err.response?.data?.message || 'Не вдалося створити проект'
         }
     }
 }
@@ -71,12 +71,12 @@ const createProject = async () => {
     <div class="space-y-6">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-                <h1 class="text-3xl font-bold tracking-tight">Projects</h1>
-                <p class="text-muted-foreground text-sm">Manage and track your team's projects.</p>
+                <h1 class="text-3xl font-bold tracking-tight">Проекти</h1>
+                <p class="text-muted-foreground text-sm">Керуйте та відстежуйте проекти вашої команди.</p>
             </div>
             <Button @click="showModal = true" class="shrink-0">
                 <PlusIcon class="mr-2 h-4 w-4" />
-                New Project
+                Новий проект
             </Button>
         </div>
 
@@ -84,15 +84,15 @@ const createProject = async () => {
         <div class="flex flex-col md:flex-row gap-4">
             <div class="relative flex-1">
                 <SearchIcon class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input v-model="search" type="search" placeholder="Search projects..." class="pl-8" />
+                <Input v-model="search" type="search" placeholder="Пошук проектів..." class="pl-8" />
             </div>
             <div class="w-full md:w-[200px]">
                 <select v-model="sort"
                     class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
-                    <option value="-created_at">Newest First</option>
-                    <option value="created_at">Oldest First</option>
-                    <option value="name">Name (A-Z)</option>
-                    <option value="-name">Name (Z-A)</option>
+                    <option value="-created_at">Новіші першими</option>
+                    <option value="created_at">Старіші першими</option>
+                    <option value="name">Назва (А-Я)</option>
+                    <option value="-name">Назва (Я-А)</option>
                 </select>
             </div>
         </div>
@@ -100,15 +100,15 @@ const createProject = async () => {
         <!-- Project List -->
         <div v-if="loading" class="flex flex-col items-center justify-center py-24 space-y-4">
             <Loader2Icon class="h-8 w-8 animate-spin text-primary" />
-            <p class="text-sm text-muted-foreground">Loading projects...</p>
+            <p class="text-sm text-muted-foreground">Завантаження проектів...</p>
         </div>
 
         <div v-else-if="projects.length === 0"
             class="flex flex-col items-center justify-center py-24 border rounded-lg border-dashed bg-muted/20">
-            <p class="text-muted-foreground">No projects found.</p>
-            <Button variant="link" @click="search = ''" v-if="search">Clear search</Button>
+            <p class="text-muted-foreground">Проекти не знайдено.</p>
+            <Button variant="link" @click="search = ''" v-if="search">Очистити пошук</Button>
             <Button variant="outline" @click="showModal = true" class="mt-4" v-else>
-                Create your first project
+                Створити перший проект
             </Button>
         </div>
 
@@ -129,27 +129,28 @@ const createProject = async () => {
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <Card class="w-full max-w-lg shadow-2xl animate-in fade-in zoom-in duration-200">
                 <CardHeader>
-                    <CardTitle>Create New Project</CardTitle>
-                    <p class="text-sm text-muted-foreground">Fill in the details below to start a new project.</p>
+                    <CardTitle>Створити новий проект</CardTitle>
+                    <p class="text-sm text-muted-foreground">Заповніть деталі нижче, щоб розпочати новий проект.</p>
                 </CardHeader>
                 <form @submit.prevent="createProject">
                     <CardContent class="space-y-4">
                         <div class="space-y-2">
-                            <Label for="name">Project Name</Label>
-                            <Input id="name" v-model="newProject.name" placeholder="e.g. Website Redesign" required />
+                            <Label for="name">Назва проекту</Label>
+                            <Input id="name" v-model="newProject.name" placeholder="Наприклад: Редизайн веб-сайту"
+                                required />
                         </div>
                         <div class="space-y-2">
-                            <Label for="description">Description (Optional)</Label>
+                            <Label for="description">Опис (необов'язково)</Label>
                             <Textarea id="description" v-model="newProject.description"
-                                placeholder="Briefly describe what this project is about..." rows="4" />
+                                placeholder="Коротко опишіть, про що цей проект..." rows="4" />
                         </div>
                         <div v-if="error" class="text-sm font-medium text-destructive">
                             {{ error }}
                         </div>
                     </CardContent>
                     <div class="flex items-center justify-end gap-3 p-6 pt-0">
-                        <Button variant="outline" type="button" @click="showModal = false">Cancel</Button>
-                        <Button type="submit">Create Project</Button>
+                        <Button variant="outline" type="button" @click="showModal = false">Скасувати</Button>
+                        <Button type="submit">Створити проект</Button>
                     </div>
                 </form>
             </Card>

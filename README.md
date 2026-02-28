@@ -7,6 +7,11 @@
 
 ## Запуск
 
+### .env
+1. `cd backend && cp .env.example .env`
+2. `cd frontend && cp .env.example .env`
+3. `cd backend && php artisan key:generate`
+
 ### Backend
 1. `cd backend`
 2. `php artisan migrate:fresh --seed` (Використав SQLite по замовчуванню)
@@ -21,7 +26,15 @@
 1. `cd backend`
 2. `php artisan test`
 
+## API документація
+1. `cd backend`
+2. `php artisan l5-swagger:generate`
+3. `http://localhost:8000/api/documentation`
 
+## Вхід і перевірка
+1. Тестові дані для входу знаходяться в `backend\database\seeders\DatabaseSeeder.php`
+
+## =======================================================
 ## Опис продукту: "Projects & Tasks"
 
 Потрібно реалізувати спрощений менеджер проєктів і задач:

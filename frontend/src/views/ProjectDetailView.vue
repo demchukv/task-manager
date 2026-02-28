@@ -50,7 +50,7 @@ const fetchProject = async () => {
         const response = await api.get(`/projects/${route.params.id}`)
         project.value = response.data
     } catch (err) {
-        console.error('Failed to fetch project', err)
+        console.error('Не вдалося завантажити проект', err)
     } finally {
         loading.value = false
     }
@@ -68,7 +68,7 @@ const fetchTasks = async () => {
         })
         tasks.value = response.data.data
     } catch (err) {
-        console.error('Failed to fetch tasks', err)
+        console.error('Не вдалося завантажити завдання', err)
     } finally {
         tasksLoading.value = false
     }
@@ -80,7 +80,7 @@ const fetchUsers = async () => {
         const response = await api.get('/users')
         users.value = response.data
     } catch (err) {
-        console.error('Failed to fetch users', err)
+        console.error('Не вдалося завантажити користувачів', err)
     }
 }
 
@@ -116,9 +116,9 @@ const createTask = async () => {
     } catch (err: any) {
         if (err.response?.data?.errors) {
             const firstError = Object.values(err.response.data.errors)[0] as string[]
-            taskError.value = firstError[0] || 'Validation failed'
+            taskError.value = firstError[0] || 'Помилка валідації'
         } else {
-            taskError.value = err.response?.data?.message || 'Failed to create task'
+            taskError.value = err.response?.data?.message || 'Не вдалося створити завдання'
         }
     }
 }
@@ -132,7 +132,7 @@ const deleteProject = async () => {
         await api.delete(`/projects/${project.value.id}`)
         router.push('/projects')
     } catch (err) {
-        console.error('Failed to delete project', err)
+        console.error('Не вдалося видалити проект', err)
     }
 }
 </script>
@@ -141,7 +141,7 @@ const deleteProject = async () => {
     <div class="space-y-6">
         <div v-if="loading" class="flex flex-col items-center justify-center py-24 space-y-4">
             <Loader2Icon class="h-8 w-8 animate-spin text-primary" />
-            <p class="text-sm text-muted-foreground">Loading project details...</p>
+            <p class="text-sm text-muted-foreground">Завантаження деталей проекту...</p>
         </div>
 
         <div v-else-if="project" class="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -150,7 +150,7 @@ const deleteProject = async () => {
                 <nav class="flex items-center text-xs text-muted-foreground">
                     <RouterLink to="/projects" class="hover:text-primary flex items-center gap-1 transition-colors">
                         <ChevronLeftIcon class="h-3 w-3" />
-                        Back to Projects
+                        Назад до проектів
                     </RouterLink>
                     <Separator orientation="vertical" class="mx-2 h-3" />
                     <span class="font-medium text-foreground truncate max-w-[200px]">{{ project.name }}</span>
@@ -160,7 +160,7 @@ const deleteProject = async () => {
                     <div class="space-y-1">
                         <h1 class="text-3xl font-bold tracking-tight">{{ project.name }}</h1>
                         <p class="text-muted-foreground text-sm max-w-2xl">
-                            {{ project.description || 'No description provided for this project.' }}
+                            {{ project.description || 'Немає опису для цього проекту.' }}
                         </p>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
@@ -172,17 +172,17 @@ const deleteProject = async () => {
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogTitle>Ви впевнені, що хочете видалити цей проект?</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        This action cannot be undone. This will permanently delete the project
-                                        "{{ project.name }}" and all its associated tasks.
+                                        Цю дію не можна скасувати. Це назавжди видалить проект
+                                        "{{ project.name }}" та всі пов'язані з ним завдання.
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogCancel>Скасувати</AlertDialogCancel>
                                     <AlertDialogAction @click="deleteProject"
                                         class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                        Delete Project
+                                        Видалити проект
                                     </AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
@@ -190,7 +190,7 @@ const deleteProject = async () => {
 
                         <Button @click="showTaskModal = true">
                             <PlusIcon class="mr-2 h-4 w-4" />
-                            Add Task
+                            Додати завдання
                         </Button>
                     </div>
                 </div>
@@ -202,7 +202,7 @@ const deleteProject = async () => {
             <div class="space-y-6">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <h2 class="text-xl font-semibold flex items-center gap-2">
-                        Tasks
+                        Завдання
                         <Badge variant="secondary" class="rounded-full px-2" v-if="tasks.length">{{ tasks.length }}
                         </Badge>
                     </h2>
@@ -215,17 +215,17 @@ const deleteProject = async () => {
                         <div class="flex items-center gap-2 w-full sm:w-auto">
                             <select v-model="filterStatus"
                                 class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
-                                <option value="">All Statuses</option>
+                                <option value="">Всі статуси</option>
                                 <option value="todo">Todo</option>
                                 <option value="in_progress">In Progress</option>
                                 <option value="done">Done</option>
                             </select>
                             <select v-model="filterPriority"
                                 class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
-                                <option value="">All Priorities</option>
-                                <option value="high">High</option>
-                                <option value="medium">Medium</option>
-                                <option value="low">Low</option>
+                                <option value="">Всі пріоритети</option>
+                                <option value="high">Високий</option>
+                                <option value="medium">Середній</option>
+                                <option value="low">Низький</option>
                             </select>
                         </div>
                     </div>
@@ -233,20 +233,20 @@ const deleteProject = async () => {
 
                 <div v-if="tasksLoading" class="flex flex-col items-center justify-center py-12 space-y-2">
                     <Loader2Icon class="h-6 w-6 animate-spin text-primary" />
-                    <p class="text-xs text-muted-foreground">Updating tasks...</p>
+                    <p class="text-xs text-muted-foreground">Оновлення завдань...</p>
                 </div>
 
                 <div v-else-if="tasks.length === 0"
                     class="flex flex-col items-center justify-center py-24 border rounded-lg border-dashed bg-muted/20">
                     <p class="text-muted-foreground text-sm text-center">
-                        No tasks found.
+                        Завдання не знайдено.
                         <br />
-                        <span v-if="taskSearch || filterStatus || filterPriority">Try adjusting your filters.</span>
-                        <span v-else>Start by adding a new task to this project.</span>
+                        <span v-if="taskSearch || filterStatus || filterPriority">Спробуйте змінити фільтри.</span>
+                        <span v-else>Почніть з додавання нового завдання до цього проекту.</span>
                     </p>
                     <Button variant="link" size="sm" @click="taskSearch = ''; filterStatus = ''; filterPriority = ''"
                         v-if="taskSearch || filterStatus || filterPriority">
-                        Clear all filters
+                        Очистити всі фільтри
                     </Button>
                 </div>
 
@@ -261,8 +261,8 @@ const deleteProject = async () => {
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <Card class="w-full max-w-lg shadow-2xl animate-in fade-in zoom-in duration-200">
                 <CardHeader>
-                    <CardTitle>Add New Task</CardTitle>
-                    <p class="text-sm text-muted-foreground">Define a new task for {{ project?.name }}.</p>
+                    <CardTitle>Додати нове завдання</CardTitle>
+                    <p class="text-sm text-muted-foreground">Визначте нове завдання для {{ project?.name }}.</p>
                 </CardHeader>
                 <form @submit.prevent="createTask">
                     <CardContent class="space-y-4">
@@ -278,7 +278,7 @@ const deleteProject = async () => {
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="space-y-2">
-                                <Label for="status">Status</Label>
+                                <Label for="status">Статус</Label>
                                 <select id="status" v-model="newTask.status"
                                     class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
                                     <option value="todo">Todo</option>
@@ -287,24 +287,24 @@ const deleteProject = async () => {
                                 </select>
                             </div>
                             <div class="space-y-2">
-                                <Label for="priority">Priority</Label>
+                                <Label for="priority">Пріоритет</Label>
                                 <select id="priority" v-model="newTask.priority"
                                     class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
-                                    <option value="low">Low</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="high">High</option>
+                                    <option value="low">Низький</option>
+                                    <option value="medium">Середній</option>
+                                    <option value="high">Високий</option>
                                 </select>
                             </div>
                         </div>
                         <div class="space-y-2">
-                            <Label for="due_date">Due Date</Label>
+                            <Label for="due_date">Кінцевий термін</Label>
                             <Input id="due_date" v-model="newTask.due_date" type="date" />
                         </div>
                         <div v-if="auth.isAdmin" class="space-y-2">
-                            <Label for="assignee">Assign To</Label>
+                            <Label for="assignee">Призначити</Label>
                             <select id="assignee" v-model="newTask.assignee_id"
                                 class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
-                                <option value="">Unassigned</option>
+                                <option value="">Не призначено</option>
                                 <option v-for="user in users" :key="user.id" :value="user.id">
                                     {{ user.name }} ({{ user.email }})
                                 </option>
@@ -315,8 +315,8 @@ const deleteProject = async () => {
                         </div>
                     </CardContent>
                     <div class="flex items-center justify-end gap-3 p-6 pt-0">
-                        <Button variant="outline" type="button" @click="showTaskModal = false">Cancel</Button>
-                        <Button type="submit">Add Task</Button>
+                        <Button variant="outline" type="button" @click="showTaskModal = false">Скасувати</Button>
+                        <Button type="submit">Додати завдання</Button>
                     </div>
                 </form>
             </Card>

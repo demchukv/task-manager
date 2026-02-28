@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 
 const props = defineProps<{
     comment: {
@@ -30,7 +29,7 @@ const getInitials = (name: string) => {
             <div class="flex items-center justify-between">
                 <h4 class="text-sm font-semibold">{{ comment.user.name }}</h4>
                 <span class="text-[10px] text-muted-foreground">{{ new Date(comment.created_at).toLocaleString()
-                    }}</span>
+                }}</span>
             </div>
             <Card class="bg-muted/30 border-none shadow-none">
                 <CardContent class="p-3 text-sm leading-relaxed">

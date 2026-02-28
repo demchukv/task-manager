@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { CalendarIcon, UserIcon, ListTodoIcon } from 'lucide-vue-next'
 
 defineProps<{
@@ -28,7 +27,7 @@ defineProps<{
                 </CardTitle>
             </div>
             <CardDescription class="line-clamp-2 min-h-[40px]">
-                {{ project.description || 'No description provided.' }}
+                {{ project.description || 'Немає опису.' }}
             </CardDescription>
         </CardHeader>
         <CardContent>
@@ -39,12 +38,12 @@ defineProps<{
                 </div>
                 <div class="flex items-center text-[10px] font-medium justify-end">
                     <ListTodoIcon class="mr-1 h-3 w-3 text-primary" />
-                    <span>{{ project.tasks_count || 0 }} tasks</span>
+                    <span>{{ project.tasks_count || 0 }} завдань</span>
                 </div>
                 <div class="flex items-center text-[10px] font-medium col-span-2">
                     <UserIcon class="mr-1 h-3 w-3 text-muted-foreground" />
-                    <span class="text-muted-foreground mr-1">Owner:</span>
-                    <span class="font-semibold">{{ project.owner?.name || 'Unknown' }}</span>
+                    <span class="text-muted-foreground mr-1">Власник:</span>
+                    <span class="font-semibold">{{ project.owner?.name || 'Невідомо' }}</span>
                 </div>
             </div>
         </CardContent>

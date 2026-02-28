@@ -25,9 +25,9 @@ const handleLogin = async () => {
     } catch (err: any) {
         if (err.response?.data?.errors) {
             const firstError = Object.values(err.response.data.errors)[0] as string[]
-            error.value = firstError[0] || 'Validation failed'
+            error.value = firstError[0] || 'Помилка валідації'
         } else {
-            error.value = err.response?.data?.message || 'Failed to login. Please check your credentials.'
+            error.value = err.response?.data?.message || 'Помилка авторизації. Перевірте ваші дані.'
         }
     } finally {
         loading.value = false
@@ -38,9 +38,9 @@ const handleLogin = async () => {
 <template>
     <Card class="w-full max-w-md mx-auto">
         <CardHeader>
-            <CardTitle class="text-2xl text-center">Sign In</CardTitle>
+            <CardTitle class="text-2xl text-center">Увійти</CardTitle>
             <CardDescription class="text-center">
-                Enter your email and password to access your account
+                Введіть ваш email та пароль для входу в акаунт
             </CardDescription>
         </CardHeader>
         <form @submit.prevent="handleLogin">
@@ -51,7 +51,7 @@ const handleLogin = async () => {
                 </div>
                 <div class="space-y-2">
                     <div class="flex items-center justify-between">
-                        <Label for="password">Password</Label>
+                        <Label for="password">Пароль</Label>
                     </div>
                     <Input id="password" type="password" required v-model="password" />
                 </div>
@@ -62,14 +62,14 @@ const handleLogin = async () => {
             <CardFooter class="flex flex-col space-y-4">
                 <Button type="submit" class="w-full" :disabled="loading">
                     <span v-if="loading" class="flex items-center gap-2">
-                        <Spinner /> Signing in...
+                        <Spinner /> Вхід...
                     </span>
-                    <span v-else>Sign In</span>
+                    <span v-else>Увійти</span>
                 </Button>
                 <div class="text-center text-sm text-muted-foreground">
-                    Don't have an account?
+                    Не маєте акаунта?
                     <RouterLink to="/register" class="text-primary hover:underline font-medium">
-                        Register
+                        Зареєструватися
                     </RouterLink>
                 </div>
             </CardFooter>

@@ -24,12 +24,8 @@ const logout = async () => {
       <div class="container flex h-14 items-center justify-between">
         <div class="flex items-center gap-4 md:gap-6">
           <RouterLink to="/projects" class="flex items-center space-x-2">
-            <span class="inline-block font-bold text-primary text-xl">ProjectTask</span>
+            <span class="inline-block font-bold text-primary text-xl">Projects & Task</span>
           </RouterLink>
-          <nav class="flex items-center space-x-6 text-sm font-medium">
-            <RouterLink to="/projects" class="transition-colors hover:text-foreground/80 text-foreground">Projects
-            </RouterLink>
-          </nav>
         </div>
         <div class="flex items-center gap-4">
           <div class="hidden md:flex flex-col items-end">
@@ -37,7 +33,7 @@ const logout = async () => {
             <span class="text-[10px] text-muted-foreground uppercase tracking-wider">{{ auth.user?.role }}</span>
           </div>
           <Button variant="outline" size="sm" @click="logout" class="h-8">
-            Logout
+            Вийти
           </Button>
         </div>
       </div>

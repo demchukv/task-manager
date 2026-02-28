@@ -17,7 +17,6 @@ import {
     UserIcon,
     SendIcon,
     MessageSquareIcon,
-    ClockIcon,
     Trash2Icon
 } from 'lucide-vue-next'
 import {
@@ -52,7 +51,7 @@ const fetchTask = async () => {
         const response = await api.get(`/tasks/${route.params.id}`)
         task.value = response.data
     } catch (err) {
-        console.error('Failed to fetch task', err)
+        console.error('Помилка завантаження завдання', err)
     } finally {
         loading.value = false
     }
@@ -63,7 +62,7 @@ const fetchComments = async () => {
         const response = await api.get(`/tasks/${route.params.id}/comments`)
         comments.value = response.data
     } catch (err) {
-        console.error('Failed to fetch comments', err)
+        console.error('Помилка завантаження коментарів', err)
     }
 }
 
@@ -73,7 +72,7 @@ const fetchUsers = async () => {
         const response = await api.get('/users')
         users.value = response.data
     } catch (err) {
-        console.error('Failed to fetch users', err)
+        console.error('Помилка завантаження користувачів', err)
     }
 }
 
@@ -103,9 +102,9 @@ const postComment = async () => {
     } catch (err: any) {
         if (err.response?.data?.errors) {
             const firstError = Object.values(err.response.data.errors)[0] as string[]
-            commentError.value = firstError[0] || 'Validation failed'
+            commentError.value = firstError[0] || 'Помилка валідації'
         } else {
-            commentError.value = err.response?.data?.message || 'Failed to post comment'
+            commentError.value = err.response?.data?.message || 'Помилка публікації коментаря'
         }
     } finally {
         submitting.value = false
@@ -127,9 +126,9 @@ const updateTask = async () => {
     } catch (err: any) {
         if (err.response?.data?.errors) {
             const firstError = Object.values(err.response.data.errors)[0] as string[]
-            updateError.value = firstError[0] || 'Validation failed'
+            updateError.value = firstError[0] || 'Помилка валідації'
         } else {
-            updateError.value = err.response?.data?.message || 'Failed to update task'
+            updateError.value = err.response?.data?.message || 'Помилка оновлення завдання'
         }
     }
 }
@@ -152,7 +151,7 @@ const deleteTask = async () => {
         await api.delete(`/tasks/${task.value.id}`)
         router.push(`/projects/${task.value.project_id}`)
     } catch (err) {
-        console.error('Failed to delete task', err)
+        console.error('Помилка видалення завдання', err)
     }
 }
 </script>
@@ -161,7 +160,7 @@ const deleteTask = async () => {
     <div class="space-y-6">
         <div v-if="loading" class="flex flex-col items-center justify-center py-24 space-y-2">
             <Loader2Icon class="h-8 w-8 animate-spin text-primary" />
-            <p class="text-sm text-muted-foreground">Loading task details...</p>
+            <p class="text-sm text-muted-foreground">Завантаження деталей завдання...</p>
         </div>
 
         <div v-else-if="task" class="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -170,7 +169,7 @@ const deleteTask = async () => {
                 <RouterLink :to="`/projects/${task.project_id}`"
                     class="hover:text-primary flex items-center gap-1 transition-colors">
                     <ChevronLeftIcon class="h-3 w-3" />
-                    Back to Project
+                    Назад до проекту
                 </RouterLink>
                 <Separator orientation="vertical" class="mx-2 h-3" />
                 <span class="font-medium text-foreground truncate max-w-[200px]">{{ task.title }}</span>
@@ -187,7 +186,7 @@ const deleteTask = async () => {
                                         {{ task.status.replace('_', ' ') }}
                                     </Badge>
                                     <Badge variant="outline" class="capitalize text-[10px]">
-                                        Priority: {{ task.priority }}
+                                        Пріоритет: {{ task.priority }}
                                     </Badge>
                                 </div>
                                 <CardTitle class="text-3xl font-bold pt-2 leading-tight">{{ task.title }}</CardTitle>
@@ -201,17 +200,17 @@ const deleteTask = async () => {
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                     <AlertDialogHeader>
-                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                        <AlertDialogTitle>Ви впевнені, що хочете видалити завдання?</AlertDialogTitle>
                                         <AlertDialogDescription>
-                                            This action cannot be undone. This will permanently delete the task
+                                            Ця дія не може бути скасована. Це назавжди видалить завдання
                                             "{{ task.title }}".
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogCancel>Скасувати</AlertDialogCancel>
                                         <AlertDialogAction @click="deleteTask"
                                             class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                            Delete Task
+                                            Видалити завдання
                                         </AlertDialogAction>
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
@@ -229,17 +228,17 @@ const deleteTask = async () => {
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                     <AlertDialogHeader>
-                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                        <AlertDialogTitle>Ви впевнені, що хочете видалити завдання?</AlertDialogTitle>
                                         <AlertDialogDescription>
-                                            This action cannot be undone. This will permanently delete the task
+                                            Ця дія не може бути скасована. Це назавжди видалить завдання
                                             "{{ task.title }}".
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogCancel>Скасувати</AlertDialogCancel>
                                         <AlertDialogAction @click="deleteTask"
                                             class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                            Delete Task
+                                            Видалити завдання
                                         </AlertDialogAction>
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
@@ -255,19 +254,19 @@ const deleteTask = async () => {
                             </div>
                             <div class="space-y-1.5 flex-1 md:w-32">
                                 <Label class="text-[10px] uppercase font-bold text-muted-foreground"
-                                    for="priority">Priority</Label>
+                                    for="priority">Пріоритет</Label>
                                 <select id="priority" v-model="task.priority" @change="updateTask"
                                     class="flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
                                     <option v-for="opt in priorityOptions" :key="opt" :value="opt">{{ opt.toUpperCase()
-                                    }}</option>
+                                        }}</option>
                                 </select>
                             </div>
                             <div v-if="auth.isAdmin" class="space-y-1.5 flex-1 md:w-48">
                                 <Label class="text-[10px] uppercase font-bold text-muted-foreground"
-                                    for="assignee">Assignee</Label>
+                                    for="assignee">Відповідальний</Label>
                                 <select id="assignee" v-model="task.assignee_id" @change="updateTask"
                                     class="flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
-                                    <option :value="null">Unassigned</option>
+                                    <option :value="null">Не призначено</option>
                                     <option v-for="u in users" :key="u.id" :value="u.id">{{ u.name }}</option>
                                 </select>
                             </div>
@@ -287,16 +286,16 @@ const deleteTask = async () => {
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-muted-foreground">
                         <div class="flex items-center gap-2">
                             <UserIcon class="h-4 w-4 text-primary" />
-                            <span class="font-medium">Assigned to:</span>
+                            <span class="font-medium">Відповідальний:</span>
                             <span class="text-foreground italic" v-if="task.assignee">{{ task.assignee.name }}</span>
-                            <span class="text-muted-foreground italic" v-else>Unassigned</span>
+                            <span class="text-muted-foreground italic" v-else>Не призначено</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <CalendarIcon class="h-4 w-4 text-primary" />
-                            <span class="font-medium">Due Date:</span>
+                            <span class="font-medium">Кінцевий термін:</span>
                             <span class="text-foreground italic" v-if="task.due_date">{{ new
                                 Date(task.due_date).toLocaleDateString() }}</span>
-                            <span class="text-muted-foreground italic" v-else>No due date</span>
+                            <span class="text-muted-foreground italic" v-else>Немає кінцевого терміну</span>
                         </div>
                     </div>
                 </CardContent>
@@ -306,7 +305,7 @@ const deleteTask = async () => {
             <div class="space-y-6 pb-12">
                 <div class="flex items-center gap-2">
                     <MessageSquareIcon class="h-5 w-5 text-primary" />
-                    <h3 class="text-xl font-bold tracking-tight">Collaboration</h3>
+                    <h3 class="text-xl font-bold tracking-tight">Колаборація</h3>
                     <Badge variant="secondary" class="rounded-full h-5 min-w-5 flex items-center justify-center">{{
                         comments.length }}</Badge>
                 </div>
@@ -317,7 +316,7 @@ const deleteTask = async () => {
                     <div v-if="comments.length === 0"
                         class="flex flex-col items-center justify-center py-12 border rounded-lg border-dashed bg-muted/20 text-muted-foreground">
                         <MessageSquareIcon class="h-8 w-8 mb-2 opacity-20" />
-                        <p class="text-sm">No discussion started yet.</p>
+                        <p class="text-sm">Ще немає коментарів.</p>
                     </div>
 
                     <Separator class="my-8" />
@@ -330,7 +329,7 @@ const deleteTask = async () => {
                                     class="h-6 w-6 rounded-full bg-primary flex items-center justify-center text-[10px] text-primary-foreground font-bold uppercase">
                                     {{ auth.user?.name.charAt(0) }}
                                 </div>
-                                Add a Comment
+                                Додати коментар
                             </CardTitle>
                         </CardHeader>
                         <form @submit.prevent="postComment">
@@ -343,7 +342,7 @@ const deleteTask = async () => {
                                 <Button type="submit" size="sm" :disabled="submitting || !newComment.trim()">
                                     <Loader2Icon v-if="submitting" class="mr-2 h-4 w-4 animate-spin" />
                                     <SendIcon v-else class="mr-2 h-4 w-4" />
-                                    Post Update
+                                    Оновити
                                 </Button>
                             </CardFooter>
                             <div v-if="commentError" class="px-6 pb-4 text-xs font-medium text-destructive">
