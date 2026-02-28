@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\Project;
-use App\Models\Task;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -26,7 +25,8 @@ class TaskTest extends TestCase
                 'priority' => 'high',
             ]);
 
-        $response->assertStatus(201);
+        $response->assertStatus(201)
+            ->assertJsonPath('status', 'success');
         $this->assertDatabaseHas('tasks', ['title' => 'New Task', 'project_id' => $project->id]);
     }
 
@@ -43,7 +43,8 @@ class TaskTest extends TestCase
                 'status' => 'done',
             ]);
 
-        $response->assertStatus(200);
+        $response->assertStatus(200)
+            ->assertJsonPath('status', 'success');
         $this->assertEquals('done', $task->fresh()->status);
     }
 }

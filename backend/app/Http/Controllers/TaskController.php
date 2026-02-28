@@ -3,15 +3,21 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use App\Models\Project;
+use App\Models\Task;
+use App\Http\Resources\TaskResource;
+use App\Http\Requests\Task\StoreTaskRequest;
+use App\Http\Requests\Task\UpdateTaskRequest;
 
 class TaskController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request, \App\Models\Project $project)
+    public function index(Request $request, Project $project)
     {
-        $this->authorizeAccess($project);
+        Gate::authorize('view', $project);
 
         $query = $project->tasks()->with('assignee');
 
@@ -31,65 +37,42 @@ class TaskController extends Controller
             $query->where('title', 'like', '%' . $request->q . '%');
         }
 
-        return \App\Http\Resources\TaskResource::collection($query->paginate(10));
+        return $this->successResponse(TaskResource::collection($query->paginate(10))->response()->getData(true));
     }
 
-    public function store(Request $request, \App\Models\Project $project)
+    public function store(StoreTaskRequest $request, Project $project)
     {
-        $this->authorizeAccess($project);
+        Gate::authorize('update', $project);
 
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'status' => 'nullable|in:todo,in_progress,done',
-            'priority' => 'nullable|in:low,medium,high',
-            'assignee_id' => 'nullable|exists:users,id',
-            'due_date' => 'nullable|date',
-        ]);
+        $validated = $request->validated();
 
         $task = $project->tasks()->create($validated);
 
-        return new \App\Http\Resources\TaskResource($task);
+        return $this->successResponse(new TaskResource($task), 'Task created successfully', 201);
     }
 
-    public function show(\App\Models\Task $task)
+    public function show(Task $task)
     {
-        $this->authorizeAccess($task->project);
-        return new \App\Http\Resources\TaskResource($task->load('assignee'));
+        Gate::authorize('view', $task);
+        return $this->successResponse(new TaskResource($task->load('assignee')));
     }
 
-    public function update(Request $request, \App\Models\Task $task)
+    public function update(UpdateTaskRequest $request, Task $task)
     {
-        $this->authorizeAccess($task->project);
+        Gate::authorize('update', $task);
 
-        $validated = $request->validate([
-            'title' => 'sometimes|required|string|max:255',
-            'description' => 'nullable|string',
-            'status' => 'sometimes|required|in:todo,in_progress,done',
-            'priority' => 'sometimes|required|in:low,medium,high',
-            'assignee_id' => 'nullable|exists:users,id',
-            'due_date' => 'nullable|date',
-        ]);
+        $validated = $request->validated();
 
         $task->update($validated);
 
-        return new \App\Http\Resources\TaskResource($task);
+        return $this->successResponse(new TaskResource($task), 'Task updated successfully');
     }
 
-    public function destroy(\App\Models\Task $task)
+    public function destroy(Task $task)
     {
-        $this->authorizeAccess($task->project);
+        Gate::authorize('delete', $task);
         $task->delete();
-        return response()->noContent();
+        return $this->successResponse(null, 'Task deleted successfully', 204);
     }
 
-    protected function authorizeAccess(\App\Models\Project $project)
-    {
-        if (request()->user()->role === 'admin')
-            return;
-
-        if ($project->owner_id !== request()->user()->id && !$project->members->contains(request()->user()->id)) {
-            abort(403);
-        }
-    }
 }

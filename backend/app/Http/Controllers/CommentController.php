@@ -3,41 +3,34 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use App\Models\Task;
+use App\Http\Resources\CommentResource;
+use App\Http\Requests\Comment\StoreCommentRequest;
 
 class CommentController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(\App\Models\Task $task)
+    public function index(Task $task)
     {
-        $this->authorizeAccess($task->project);
-        return \App\Http\Resources\CommentResource::collection($task->comments()->with('user')->latest()->get());
+        Gate::authorize('view', $task);
+        return $this->successResponse(CommentResource::collection($task->comments()->with('user')->latest()->get()));
     }
 
-    public function store(Request $request, \App\Models\Task $task)
+    public function store(StoreCommentRequest $request, Task $task)
     {
-        $this->authorizeAccess($task->project);
+        Gate::authorize('view', $task);
 
-        $validated = $request->validate([
-            'body' => 'required|string',
-        ]);
+        $validated = $request->validated();
 
         $comment = $task->comments()->create([
             'body' => $validated['body'],
             'user_id' => $request->user()->id,
         ]);
 
-        return new \App\Http\Resources\CommentResource($comment->load('user'));
+        return $this->successResponse(new CommentResource($comment->load('user')), 'Comment added successfully');
     }
 
-    protected function authorizeAccess(\App\Models\Project $project)
-    {
-        if (request()->user()->role === 'admin')
-            return;
-
-        if ($project->owner_id !== request()->user()->id && !$project->members->contains(request()->user()->id)) {
-            abort(403);
-        }
-    }
 }

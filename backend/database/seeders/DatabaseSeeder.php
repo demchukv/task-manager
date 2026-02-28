@@ -4,7 +4,9 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Seeder;
+use App\Models\Project;
 
 class DatabaseSeeder extends Seeder
 {
@@ -18,18 +20,18 @@ class DatabaseSeeder extends Seeder
         $admin = User::create([
             'name' => 'Admin User',
             'email' => 'admin@example.com',
-            'password' => \Illuminate\Support\Facades\Hash::make('password'),
+            'password' => Hash::make('password'),
             'role' => 'admin',
         ]);
 
         $member = User::create([
             'name' => 'Member User',
             'email' => 'member@example.com',
-            'password' => \Illuminate\Support\Facades\Hash::make('password'),
+            'password' => Hash::make('password'),
             'role' => 'member',
         ]);
 
-        $project = \App\Models\Project::create([
+        $project = Project::create([
             'name' => 'Sample Project',
             'description' => 'A sample project for testing',
             'owner_id' => $member->id,

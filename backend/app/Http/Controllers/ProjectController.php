@@ -3,6 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use App\Models\Project;
+use App\Http\Resources\ProjectResource;
+use App\Http\Requests\Project\StoreProjectRequest;
+use App\Http\Requests\Project\UpdateProjectRequest;
 
 class ProjectController extends Controller
 {
@@ -11,7 +16,7 @@ class ProjectController extends Controller
      */
     public function index(Request $request)
     {
-        $query = \App\Models\Project::query();
+        $query = Project::query();
 
         // Access control: admin sees all, member sees owned or shared
         if ($request->user()->role !== 'admin') {
@@ -38,81 +43,55 @@ class ProjectController extends Controller
             $query->orderBy($column, $direction);
         }
 
-        return \App\Http\Resources\ProjectResource::collection($query->paginate(10));
+        return $this->successResponse(ProjectResource::collection($query->paginate(10))->response()->getData(true));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreProjectRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         $project = $request->user()->projects()->create($validated);
 
-        return new \App\Http\Resources\ProjectResource($project);
+        return $this->successResponse(new ProjectResource($project), 'Project created successfully', 201);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(\App\Models\Project $project)
+    public function show(Project $project)
     {
-        // Policy check would be better, but implementing direct check for now
-        $this->authorizeAccess($project);
+        Gate::authorize('view', $project);
 
-        return new \App\Http\Resources\ProjectResource($project->load('owner', 'members'));
+        return $this->successResponse(new ProjectResource($project->load('owner', 'members')));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, \App\Models\Project $project)
+    public function update(UpdateProjectRequest $request, Project $project)
     {
-        $this->authorizeOwner($project);
+        Gate::authorize('update', $project);
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         $project->update($validated);
 
-        return new \App\Http\Resources\ProjectResource($project);
+        return $this->successResponse(new ProjectResource($project), 'Project updated successfully');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(\App\Models\Project $project)
+    public function destroy(Project $project)
     {
-        $this->authorizeOwner($project);
+        Gate::authorize('delete', $project);
 
         $project->delete();
 
-        return response()->noContent();
+        return $this->successResponse(null, 'Project deleted successfully', 204);
     }
 
-    protected function authorizeAccess(\App\Models\Project $project)
-    {
-        if (request()->user()->role === 'admin')
-            return;
-
-        if ($project->owner_id !== request()->user()->id && !$project->members->contains(request()->user()->id)) {
-            abort(403);
-        }
-    }
-
-    protected function authorizeOwner(\App\Models\Project $project)
-    {
-        if (request()->user()->role === 'admin')
-            return;
-
-        if ($project->owner_id !== request()->user()->id) {
-            abort(403);
-        }
-    }
 }

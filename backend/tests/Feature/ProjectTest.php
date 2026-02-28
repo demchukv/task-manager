@@ -45,8 +45,8 @@ class ProjectTest extends TestCase
             ->getJson('/api/projects');
 
         $response->assertStatus(200)
-            ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['name' => 'My Project']);
+            ->assertJsonPath('status', 'success')
+            ->assertJsonPath('data.data.0.name', 'My Project');
     }
 
     public function test_admin_can_see_all_projects()
@@ -62,6 +62,24 @@ class ProjectTest extends TestCase
             ->getJson('/api/projects');
 
         $response->assertStatus(200)
-            ->assertJsonCount(1, 'data');
+            ->assertJsonPath('status', 'success')
+            ->assertJsonCount(1, 'data.data');
+    }
+
+    public function test_member_can_view_shared_project()
+    {
+        $owner = User::create(['name' => 'Owner', 'email' => 'owner@example.com', 'password' => 'password']);
+        $member = User::create(['name' => 'Member', 'email' => 'member@example.com', 'password' => 'password']);
+
+        $project = Project::create(['name' => 'Shared Project', 'owner_id' => $owner->id]);
+        $project->members()->attach($member->id);
+
+        $token = $member->createToken('test-token')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->getJson("/api/projects/{$project->id}");
+
+        $response->assertStatus(200)
+            ->assertJsonFragment(['name' => 'Shared Project']);
     }
 }
