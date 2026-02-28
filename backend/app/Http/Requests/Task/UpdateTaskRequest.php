@@ -22,4 +22,16 @@ class UpdateTaskRequest extends FormRequest
             'due_date' => 'nullable|date',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'title.required' => 'Назва завдання не може бути порожньою.',
+            'status.required' => 'Статус завдання є обов\'язковим.',
+            'priority.required' => 'Пріоритет завдання є обов\'язковим.',
+            'status.in' => 'Вибрано некоректний статус.',
+            'priority.in' => 'Вибрано некоректний пріоритет.',
+            'assignee_id.exists' => 'Вибраного користувача не існує.',
+        ];
+    }
 }

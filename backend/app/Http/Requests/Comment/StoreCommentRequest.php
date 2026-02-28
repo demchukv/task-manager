@@ -14,7 +14,15 @@ class StoreCommentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'body' => 'required|string',
+            'body' => 'required|string|min:1',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'body.required' => 'Коментар не може бути порожнім.',
+            'body.min' => 'Коментар має містити хоча б один символ.',
         ];
     }
 }

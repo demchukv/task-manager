@@ -22,4 +22,16 @@ class StoreTaskRequest extends FormRequest
             'due_date' => 'nullable|date',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'title.required' => 'Назва завдання є обов\'язковою.',
+            'title.max' => 'Назва завдання не повинна перевищувати 255 символів.',
+            'status.in' => 'Вибрано некоректний статус завдання.',
+            'priority.in' => 'Вибрано некоректний пріоритет завдання.',
+            'assignee_id.exists' => 'Вибраного користувача не існує.',
+            'due_date.date' => 'Введіть коректну дату дедлайну.',
+        ];
+    }
 }

@@ -15,10 +15,25 @@ import {
     PlusIcon,
     SearchIcon,
     Loader2Icon,
-    ChevronLeftIcon
+    ChevronLeftIcon,
+    Trash2Icon
 } from 'lucide-vue-next'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
 const auth = useAuthStore()
 const project = ref<any>(null)
 const tasks = ref<any[]>([]);
@@ -76,8 +91,12 @@ onMounted(() => {
 })
 
 watch([filterStatus, filterPriority, taskSearch], fetchTasks)
-
 const showTaskModal = ref(false)
+const taskError = ref('')
+
+watch(showTaskModal, (val) => {
+    if (val) taskError.value = ''
+})
 const newTask = ref({
     title: '',
     description: '',
@@ -88,13 +107,32 @@ const newTask = ref({
 })
 
 const createTask = async () => {
+    taskError.value = ''
     try {
         await api.post(`/projects/${route.params.id}/tasks`, newTask.value)
         showTaskModal.value = false
         newTask.value = { title: '', description: '', status: 'todo', priority: 'medium', due_date: '', assignee_id: '' }
         fetchTasks()
+    } catch (err: any) {
+        if (err.response?.data?.errors) {
+            const firstError = Object.values(err.response.data.errors)[0] as string[]
+            taskError.value = firstError[0] || 'Validation failed'
+        } else {
+            taskError.value = err.response?.data?.message || 'Failed to create task'
+        }
+    }
+}
+const canDelete = computed(() => {
+    if (!project.value) return false
+    return auth.isAdmin || project.value.owner?.id === auth.user?.id
+})
+
+const deleteProject = async () => {
+    try {
+        await api.delete(`/projects/${project.value.id}`)
+        router.push('/projects')
     } catch (err) {
-        console.error('Failed to create task', err)
+        console.error('Failed to delete project', err)
     }
 }
 </script>
@@ -125,10 +163,36 @@ const createTask = async () => {
                             {{ project.description || 'No description provided for this project.' }}
                         </p>
                     </div>
-                    <Button @click="showTaskModal = true" class="shrink-0">
-                        <PlusIcon class="mr-2 h-4 w-4" />
-                        Add Task
-                    </Button>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <AlertDialog v-if="canDelete">
+                            <AlertDialogTrigger as-child>
+                                <Button variant="destructive" size="icon" title="Delete Project">
+                                    <Trash2Icon class="h-4 w-4" />
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete the project
+                                        "{{ project.name }}" and all its associated tasks.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction @click="deleteProject"
+                                        class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                        Delete Project
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+
+                        <Button @click="showTaskModal = true">
+                            <PlusIcon class="mr-2 h-4 w-4" />
+                            Add Task
+                        </Button>
+                    </div>
                 </div>
             </div>
 
@@ -245,6 +309,9 @@ const createTask = async () => {
                                     {{ user.name }} ({{ user.email }})
                                 </option>
                             </select>
+                        </div>
+                        <div v-if="taskError" class="text-sm font-medium text-destructive">
+                            {{ taskError }}
                         </div>
                     </CardContent>
                     <div class="flex items-center justify-end gap-3 p-6 pt-0">

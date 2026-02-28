@@ -1,8 +1,9 @@
 ## Початок роботи з додатком
 
 1. **Управління ролями**: Використано просто поле `role` (admin/member) в таблиці користувачів. Для продакшену краще було б використати пакет `spatie/laravel-permission` для управління ролями і правами доступу.
-2. **Real-time**: Comments and task updates are not real-time. Integrating WebSockets (Laravel Echo/Reverb) would enhance the UX.
+2. **Real-time**: Коментарі на сторінці завдання оновлюються з періодичністю 30 секунд. Для повноцінного real-time можна використати WebSockets (Laravel Echo/Reverb).
 3. **Завантаження файлів**: Не реалізовано.
+4. **API документація**: Використано `darkaonline/l5-swagger:^8.6` для створення API документації. Для доступу до документації запустіть `php artisan l5-swagger:generate` і відкрийте `http://localhost:8000/api/documentation`.
 
 ## Запуск
 

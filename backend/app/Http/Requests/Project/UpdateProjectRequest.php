@@ -14,8 +14,16 @@ class UpdateProjectRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
+            'name' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Назва проекту не може бути порожньою.',
+            'name.max' => 'Назва проекту не повинна перевищувати 255 символів.',
         ];
     }
 }

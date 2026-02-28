@@ -18,4 +18,13 @@ class StoreProjectRequest extends FormRequest
             'description' => 'nullable|string',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Назва проекту є обов\'язковою.',
+            'name.string' => 'Назва проекту має бути рядком.',
+            'name.max' => 'Назва проекту не повинна перевищувати 255 символів.',
+        ];
+    }
 }

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Spinner } from '@/components/ui/spinner'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -34,7 +35,12 @@ const handleRegister = async () => {
         })
         router.push('/projects')
     } catch (err: any) {
-        error.value = err.response?.data?.message || 'Failed to register. Please check your information.'
+        if (err.response?.data?.errors) {
+            const firstError = Object.values(err.response.data.errors)[0] as string[]
+            error.value = firstError[0] || 'Validation failed'
+        } else {
+            error.value = err.response?.data?.message || 'Failed to register. Please check your information.'
+        }
     } finally {
         loading.value = false
     }
@@ -73,7 +79,9 @@ const handleRegister = async () => {
             </CardContent>
             <CardFooter class="flex flex-col space-y-4">
                 <Button type="submit" class="w-full" :disabled="loading">
-                    <span v-if="loading">Creating account...</span>
+                    <span v-if="loading" class="flex items-center gap-2">
+                        <Spinner /> Creating account...
+                    </span>
                     <span v-else>Register</span>
                 </Button>
                 <div class="text-center text-sm text-muted-foreground">

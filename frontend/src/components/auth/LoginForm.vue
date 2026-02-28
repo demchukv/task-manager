@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Spinner } from '@/components/ui/spinner'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -22,7 +23,12 @@ const handleLogin = async () => {
         await auth.login({ email: email.value, password: password.value })
         router.push('/projects')
     } catch (err: any) {
-        error.value = err.response?.data?.message || 'Failed to login. Please check your credentials.'
+        if (err.response?.data?.errors) {
+            const firstError = Object.values(err.response.data.errors)[0] as string[]
+            error.value = firstError[0] || 'Validation failed'
+        } else {
+            error.value = err.response?.data?.message || 'Failed to login. Please check your credentials.'
+        }
     } finally {
         loading.value = false
     }
@@ -55,7 +61,9 @@ const handleLogin = async () => {
             </CardContent>
             <CardFooter class="flex flex-col space-y-4">
                 <Button type="submit" class="w-full" :disabled="loading">
-                    <span v-if="loading">Signing in...</span>
+                    <span v-if="loading" class="flex items-center gap-2">
+                        <Spinner /> Signing in...
+                    </span>
                     <span v-else>Sign In</span>
                 </Button>
                 <div class="text-center text-sm text-muted-foreground">

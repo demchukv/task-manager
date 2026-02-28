@@ -43,15 +43,26 @@ watch([search, sort, page], fetchProjects)
 
 const newProject = ref({ name: '', description: '' })
 const showModal = ref(false)
+const error = ref('')
+
+watch(showModal, (val) => {
+    if (val) error.value = ''
+})
 
 const createProject = async () => {
+    error.value = ''
     try {
         await api.post('/projects', newProject.value)
         newProject.value = { name: '', description: '' }
         showModal.value = false
         fetchProjects()
-    } catch (err) {
-        console.error('Failed to create project', err)
+    } catch (err: any) {
+        if (err.response?.data?.errors) {
+            const firstError = Object.values(err.response.data.errors)[0] as string[]
+            error.value = firstError[0] || 'Validation failed'
+        } else {
+            error.value = err.response?.data?.message || 'Failed to create project'
+        }
     }
 }
 </script>
@@ -131,6 +142,9 @@ const createProject = async () => {
                             <Label for="description">Description (Optional)</Label>
                             <Textarea id="description" v-model="newProject.description"
                                 placeholder="Briefly describe what this project is about..." rows="4" />
+                        </div>
+                        <div v-if="error" class="text-sm font-medium text-destructive">
+                            {{ error }}
                         </div>
                     </CardContent>
                     <div class="flex items-center justify-end gap-3 p-6 pt-0">
